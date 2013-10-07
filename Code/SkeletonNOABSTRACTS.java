@@ -70,7 +70,7 @@ class Surface extends JPanel {
 }
 
 
-/*class GameOfLife extends CellularAutomata {
+class GameOfLife extends CellularAutomata {
 	
 	int[][] currentGrid;
 	int width;
@@ -114,7 +114,7 @@ class Surface extends JPanel {
 			
 			
 			
-			
+			*/
 			
 			return 0;
 		}
@@ -188,62 +188,6 @@ class Surface extends JPanel {
 		return 5;
 	}
 	
-}*/
-
-
-class GOLabs extends CellularAutomata {
-	public int getNeighbour (int x, int y, int ind){
-		if(x >= width || x <= 0 || y >= height || y <= 0){
-			return 0;
-		}
-		try {
-			if(ind <= 2){
-				return currentGrid[x-1+ind][y-1];
-			}
-			if(ind == 3){
-				return currentGrid[x-1][y];
-			}
-			if(ind == 4){
-				return currentGrid[x+1][y];
-			}
-			if(ind <= 7){
-				return currentGrid[x-6+ind][y+1];
-			}
-		} catch (Exception e){
-			/*System.out.println("butts");
-			System.out.println(x+"  "+y+"  "+ind);
-			
-			STILL NEEDS TO BE FIXED
-			
-			*/
-			return 0;
-		}
-		System.out.println("ERR: Get neighbour function called out of bounds index");
-		return -1;
-	}
-	
-	
-	public int rules (int x, int y){
-		int neighbourCount = 0;
-		for(int i = 0; i<=7; i++){
-			neighbourCount += getNeighbour(x, y, i);
-		}
-		
-		if(currentGrid[x][y] == 1){
-			if(neighbourCount < 2 || neighbourCount > 3){
-				return 0;
-			}else {
-				return 1;
-			}
-		}
-	
-		else{
-			if(neighbourCount == 3){
-				return 1;
-			}
-		}
-	}
-	
 }
 
 
@@ -259,7 +203,7 @@ public class Skeleton extends JFrame {
 	
     public Skeleton() {
 		
-		GOL = new GOLabs(makeRandomGrid(width, height));
+		GOL = new GameOfLife(width, height);
         initUI();
 		
 		
@@ -314,24 +258,6 @@ public class Skeleton extends JFrame {
             }
         });
     }
-    
-    //
-    
-    public int[][] makeRandomGrid (int w, int h){
-    	rGrid = new int[w][h];
-		for(int i = 0; i < w; i++){
-			for(int j = 0; j<h; j++){
-				
-				if(Math.random() < 0.3f){
-					rGrid[i][j] = 1;
-				}else{
-					rGrid[i][j] = 0;
-				}
-			}
-		}
-		return rGrid;
-	}
-    
 }
 
 
