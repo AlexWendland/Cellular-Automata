@@ -182,9 +182,6 @@ class GameOfLife {
 
 public class Skeleton extends JFrame {
 	
-77
-        redButton.addActionListener(this);
-
 	Surface surface;
 	
 	int width = 340;
@@ -281,6 +278,9 @@ class ToolboxPanel extends JPanel implements ActionListener {
 		}
 	}
 }
+
+
+
 
 
 
