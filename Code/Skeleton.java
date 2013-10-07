@@ -222,6 +222,9 @@ class GOLabs extends CellularAutomata {
 		return -1;
 	}
 	
+	public GOLabs (int[][] grid){
+		super(grid);
+	}
 	
 	public int rules (int x, int y){
 		int neighbourCount = 0;
@@ -242,6 +245,7 @@ class GOLabs extends CellularAutomata {
 				return 1;
 			}
 		}
+		return 0;
 	}
 	
 }
