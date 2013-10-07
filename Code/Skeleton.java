@@ -9,6 +9,8 @@ import java.awt.Rectangle;
 import javax.swing.Timer;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import javax.swing.*;
+import java.awt.Color;
 
 class Surface extends JPanel {
 	
@@ -129,7 +131,7 @@ class GameOfLife {
 		for(int i = 0; i < width; i++){
 			for(int j = 0; j<height; j++){
 				
-				if(Math.random() < 0.1f){
+				if(Math.random() < 0.3f){
 					currentGrid[i][j] = 1;
 				}else{
 					currentGrid[i][j] = 0;
@@ -180,6 +182,9 @@ class GameOfLife {
 
 public class Skeleton extends JFrame {
 	
+77
+        redButton.addActionListener(this);
+
 	Surface surface;
 	
 	int width = 340;
@@ -193,9 +198,13 @@ public class Skeleton extends JFrame {
 		GOL = new GameOfLife(width, height);
         initUI();
 		
-		JFrame test = new JFrame("Sup");
+		
+		/*JFrame test = new JFrame("Sup");
 		test.setSize(100, 400);
 		test.setVisible(true);
+		test.add(new JButton("HELLO FUCKERS"));*/
+		
+		JFrame toolbox = new Toolbox();
 		
 		runCA();
 	}
@@ -242,3 +251,38 @@ public class Skeleton extends JFrame {
         });
     }
 }
+
+
+class Toolbox extends JFrame {
+	public Toolbox (){
+		setVisible(true);
+		setSize(100, 400);
+		setLocation(200, 300);
+		
+		ToolboxPanel tbp = new ToolboxPanel();
+		
+		add(tbp);
+	}
+}
+
+class ToolboxPanel extends JPanel implements ActionListener {
+	JButton button;
+	public ToolboxPanel () {
+		button = new JButton(" HEELOOO");
+		add(button);
+		button.setVisible(true);
+		button.addActionListener(this);
+	}
+	
+	
+	public void actionPerformed(ActionEvent e) {
+		if(e.getSource() == button){
+			System.out.println("btttsts");
+		}
+	}
+}
+
+
+
+
+
