@@ -76,7 +76,7 @@ class Surface extends JPanel {
 	int width;
 	int height;
 	Surface surface;
-	
+	Co-0p
 	public int getNeighbour (int x, int y, int ind){
 		//System.out.println(x+"  "+y+"  "+ind);
 		if(x >= width || x <= 0 || y >= height || y <= 0){
@@ -113,7 +113,7 @@ class Surface extends JPanel {
 			
 			
 			
-			
+			Co-0p
 			
 			
 			return 0;
@@ -258,7 +258,7 @@ public class Skeleton extends JFrame {
 	int width = 200;
 	int height = 150;
 	
-	GameOfLife GOL;
+	GOLabs GOL;
 	
 	
     public Skeleton() {
@@ -281,7 +281,7 @@ public class Skeleton extends JFrame {
 		int delay = 60; //milliseconds
 		ActionListener taskPerformer = new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
-				GOL.newGeneration(GOL.getGrid());
+				GOL.update();
 				renderGrid(GOL.getGrid());
 			}
 		};
@@ -293,7 +293,7 @@ public class Skeleton extends JFrame {
 		setTitle("waddup");
 		
 		surface = new Surface(GOL.getGrid());
-		GOL.setSurface(surface);
+		//GOL.setSurface(surface);
 		
 		add(surface);
 		
@@ -322,7 +322,7 @@ public class Skeleton extends JFrame {
     //
     
     public int[][] makeRandomGrid (int w, int h){
-    	rGrid = new int[w][h];
+    	int[][] rGrid = new int[w][h];
 		for(int i = 0; i < w; i++){
 			for(int j = 0; j<h; j++){
 				
