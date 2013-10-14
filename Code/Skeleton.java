@@ -16,12 +16,35 @@ class Surface extends JPanel {
 	
 	int gridWidth;
 	int gridHeight;
-	int gridCellSize = 5;
+	int gridCellSize = 2;
+	
 	
 	int[][] grid;
 	
+	Color[]cols = new Color[40];	
+	
+	
 	public Surface (int[][] ingrid){
 		grid = ingrid;
+		
+		cols[0] = Color.yellow;
+		for(int i = 1; i<cols.length; i++){
+			cols[i] = cols[i-1].darker();
+			if(cols[i].equals(Color.black)){
+				cols[i] = Color.red;
+			}
+		}
+		
+		/*cols[0] = Color.white;
+		cols[1] = Color.black;
+		cols[2] = Color.red;
+		cols[3] = Color.green;
+		cols[4] = Color.blue;
+		cols[5] = Color.gray;
+		cols[6] = Color.darkGray;
+		cols[7] = Color.yellow;
+		cols[8] = Color.cyan;
+		cols[9] = Color.pink;*/
 	}
 	
     private void doDrawing(Graphics g) {
@@ -34,7 +57,6 @@ class Surface extends JPanel {
 		grid = inGrid;
 		gridWidth = grid.length;
 		gridHeight = grid[0].length;
-		//System.out.println(gridWidth+" "+gridHeight);
 	};
 	
     private void drawGrid(Graphics2D g2d){
@@ -47,18 +69,23 @@ class Surface extends JPanel {
     }
     
     private void colorGrid (Graphics2D g2d){
+    
     	for (int i = 0; i<grid.length; i++){
 			for(int j = 0; j<grid[i].length; j++){
-				if(grid[i][j] == 1){
-					int xpos = i*gridCellSize;
-					int ypos = j*gridCellSize;
-					g2d.fill(new Rectangle(xpos, ypos, gridCellSize, gridCellSize));
+				
+				if(grid[i][j] < cols.length){
+					g2d.setPaint(cols[grid[i][j]]);
+				}else{
+					System.out.println("You haven't defined enough colours you shitstain");
 				}
+				
+				int xpos = i*gridCellSize;
+				int ypos = j*gridCellSize;
+				g2d.fill(new Rectangle(xpos, ypos, gridCellSize, gridCellSize));
 			}
 		}
     }
     
-
     @Override
 
 
@@ -69,208 +96,23 @@ class Surface extends JPanel {
     }
 }
 
-
-/*class GameOfLife extends CellularAutomata {
-	
-	int[][] currentGrid;
-	int width;
-	int height;
-	Surface surface;
-	Co-0p
-	public int getNeighbour (int x, int y, int ind){
-		//System.out.println(x+"  "+y+"  "+ind);
-		if(x >= width || x <= 0 || y >= height || y <= 0){
-			return 0;
-		}
-	
-		try {
-			if(ind <= 2){
-				return currentGrid[x-1+ind][y-1];
-			}
-			if(ind == 3){
-				return currentGrid[x-1][y];
-			}
-			if(ind == 4){
-				return currentGrid[x+1][y];
-			}
-			if(ind <= 7){
-				return currentGrid[x-6+ind][y+1];
-			}
-		} catch (Exception e){
-			/*System.out.println("butts");
-			System.out.println(x+"  "+y+"  "+ind);
-			
-			
-			
-			
-			
-
-
-			
-									FIX THIS FIRST THING DICKHEAD
-			
-			
-			
-			
-			
-			Co-0p
-			
-			
-			return 0;
-		}
-			
-		System.out.println("ERR: Get neighbo;ur function called out of bounds index");
-		return -1;
-	}
-	
-	public void setSurface(Surface inSurface){
-		surface = inSurface;
-	}
-	
-	
-	public GameOfLife (int inwidth, int inheight){
-		width = inwidth;
-		height = inheight;
-		currentGrid = new int[width][height];
-		for(int i = 0; i < width; i++){
-			for(int j = 0; j<height; j++){
-				
-				if(Math.random() < 0.3f){
-					currentGrid[i][j] = 1;
-				}else{
-					currentGrid[i][j] = 0;
-				}
-				
-				//System.out.println(i+"  "+j+"  "+currentGrid[i][j]);
-			}
-		}
-		
-		System.out.println(this.getCell(10, 10));
-		
-		///
-				
-	}
-	
-	public int[][] getGrid (){
-		return currentGrid;
-	}
-	
-	public int[][] newGeneration (int[][] grid){
-		int[][] newGrid = new int[width][height];
-		for(int x = 0; x < width; x++){
-			for(int y = 0; y<height; y++){
-				
-				int neighbourCount = 0;
-				for(int i = 0; i<=7; i++){
-					neighbourCount += getNeighbour(x, y, i);
-				}
-				
-				if(currentGrid[x][y] == 1){
-					if(neighbourCount < 2 || neighbourCount > 3){
-						newGrid[x][y] = 0;
-					}else {
-						newGrid[x][y] = 1;
-					}
-				}
-				
-				else{
-					if(neighbourCount == 3){
-						newGrid[x][y] = 1;
-					}
-				}
-			}
-		}
-		currentGrid = newGrid;
-		return newGrid;
-	}
-	
-	public int rules (int x, int y){
-		return 5;
-	}
-	
-}*/
-
-
-class GOLabs extends CellularAutomata {
-	public int getNeighbour (int x, int y, int ind){
-		if(x >= width || x <= 0 || y >= height || y <= 0){
-			return 0;
-		}
-		try {
-			if(ind <= 2){
-				return currentGrid[x-1+ind][y-1];
-			}
-			if(ind == 3){
-				return currentGrid[x-1][y];
-			}
-			if(ind == 4){
-				return currentGrid[x+1][y];
-			}
-			if(ind <= 7){
-				return currentGrid[x-6+ind][y+1];
-			}
-		} catch (Exception e){
-			/*System.out.println("butts");
-			System.out.println(x+"  "+y+"  "+ind);
-			
-			STILL NEEDS TO BE FIXED
-			
-			*/
-			return 0;
-		}
-		System.out.println("ERR: Get neighbour function called out of bounds index");
-		return -1;
-	}
-	
-	public GOLabs (int[][] grid){
-		super(grid);
-	}
-	
-	public int rules (int x, int y){
-		int neighbourCount = 0;
-		for(int i = 0; i<=7; i++){
-			neighbourCount += getNeighbour(x, y, i);
-		}
-		
-		if(currentGrid[x][y] == 1){
-			if(neighbourCount < 2 || neighbourCount > 3){
-				return 0;
-			}else {
-				return 1;
-			}
-		}
-	
-		else{
-			if(neighbourCount == 3){
-				return 1;
-			}
-		}
-		return 0;
-	}
-	
-}
-
-
 public class Skeleton extends JFrame {
 	
 	Surface surface;
 	
-	int width = 200;
-	int height = 150;
+	int width = 300;
+	int height = 300;
 	
-	GOLabs GOL;
+	CellularAutomata Automata;
 	
 	
     public Skeleton() {
 		
-		GOL = new GOLabs(makeRandomGrid(width, height));
-        initUI();
-		
-		
-		/*JFrame test = new JFrame("Sup");
-		test.setSize(100, 400);
-		test.setVisible(true);
-		test.add(new JButton("HELLO FUCKERS"));*/
+		//Automata = new GOLabs(makeRandomGrid(width, height, 2));
+      	
+      	Automata = new CyclicAutomata(makeRandomGrid(width, height, 25), 25);
+      
+		initUI();
 		
 		JFrame toolbox = new Toolbox();
 		
@@ -278,11 +120,11 @@ public class Skeleton extends JFrame {
 	}
 
 	private void runCA(){
-		int delay = 60; //milliseconds
+		int delay = 10; //milliseconds
 		ActionListener taskPerformer = new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
-				GOL.update();
-				renderGrid(GOL.getGrid());
+				Automata.update();
+				renderGrid(Automata.getGrid());
 			}
 		};
 		new Timer(delay, taskPerformer).start();
@@ -292,8 +134,8 @@ public class Skeleton extends JFrame {
 
 		setTitle("waddup");
 		
-		surface = new Surface(GOL.getGrid());
-		//GOL.setSurface(surface);
+		surface = new Surface(Automata.getGrid());
+		//Automata.setSurface(surface);
 		
 		add(surface);
 		
@@ -321,16 +163,20 @@ public class Skeleton extends JFrame {
     
     //
     
-    public int[][] makeRandomGrid (int w, int h){
+    public int[][] makeRandomGrid (int w, int h, int nos){
     	int[][] rGrid = new int[w][h];
 		for(int i = 0; i < w; i++){
 			for(int j = 0; j<h; j++){
 				
-				if(Math.random() < 0.3f){
+				int rand = (int)((float)nos * Math.random());
+				
+				rGrid[i][j] = rand;
+				
+				/*if( < 0.3f){
 					rGrid[i][j] = 1;
 				}else{
 					rGrid[i][j] = 0;
-				}
+				}*/
 			}
 		}
 		return rGrid;
@@ -352,6 +198,7 @@ class Toolbox extends JFrame {
 }
 
 class ToolboxPanel extends JPanel implements ActionListener {
+	
 	JButton button;
 	public ToolboxPanel () {
 		button = new JButton(" HEELOOO");
