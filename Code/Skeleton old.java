@@ -11,38 +11,40 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.*;
 import java.awt.Color;
-import java.io.*;
 
 class Surface extends JPanel {
 	
 	int gridWidth;
 	int gridHeight;
-	int gridCellSize = 1;
+	int gridCellSize = 2;
 	
 	
 	int[][] grid;
 	
-	Color[]cols = new Color[102];	
+	Color[]cols = new Color[40];	
 	
 	
 	public Surface (int[][] ingrid){
 		grid = ingrid;
 		
-		/*cols[0] = Color.black;
-		cols[1] = Color.white;
-		
-		for(int i = 2; i<cols.length; i++){
+		cols[0] = Color.yellow;
+		for(int i = 1; i<cols.length; i++){
 			cols[i] = cols[i-1].darker();
 			if(cols[i].equals(Color.black)){
 				cols[i] = Color.red;
 			}
-		}*/
-		
-		
-		for(int i = 0; i < cols.length; i++){
-			float ratio = (float)i/(float)cols.length;
-			cols[i] = new Color(ratio, ratio, ratio);
 		}
+		
+		/*cols[0] = Color.white;
+		cols[1] = Color.black;
+		cols[2] = Color.red;
+		cols[3] = Color.green;
+		cols[4] = Color.blue;
+		cols[5] = Color.gray;
+		cols[6] = Color.darkGray;
+		cols[7] = Color.yellow;
+		cols[8] = Color.cyan;
+		cols[9] = Color.pink;*/
 	}
 	
     private void doDrawing(Graphics g) {
@@ -74,7 +76,7 @@ class Surface extends JPanel {
 				if(grid[i][j] < cols.length){
 					g2d.setPaint(cols[grid[i][j]]);
 				}else{
-					System.out.println("ColNo:"+grid[i][j]+" You haven't defined enough colours you shitstain");
+					System.out.println("You haven't defined enough colours you shitstain");
 				}
 				
 				int xpos = i*gridCellSize;
@@ -108,45 +110,7 @@ public class Skeleton extends JFrame {
 		
 		//Automata = new GOLabs(makeRandomGrid(width, height, 2));
       	
-      	System.out.println("\nWidth?");
-		
-		String CurLine = ""; // Line read from standard in
-		InputStreamReader converter = new InputStreamReader(System.in);
-		BufferedReader in = new BufferedReader(converter);
-		try{
-			CurLine = in.readLine();
-			
-			width = Integer.parseInt(CurLine);
-			
-			System.out.println("\nHeight?");
-			CurLine = in.readLine();
-			height = Integer.parseInt(CurLine);
-			
-			while(Automata == null){
-				System.out.println("Type?");
-				CurLine = in.readLine();
-				if (CurLine.toUpperCase().equals("GOL")){
-					Automata = new GOLabs(makeRandomGrid(width, height, 2));
-				}else if (CurLine.toUpperCase().equals("CYCLIC")){
-				
-					System.out.println("Cycle Length?");
-					CurLine = in.readLine();
-					int cycleLength = Integer.parseInt(CurLine);
-					
-					Automata = new CyclicAutomata(makeRandomGrid(width, height, cycleLength), cycleLength);
-				} else if (CurLine.toUpperCase().equals("SMOOTHLIFE")){
-					System.out.println("good luck");
-					
-					Automata = new SmoothLife (makeRandomGrid(width, height, 100));
-				}
-			}
-			
-		} catch (Exception e){
-		
-		}
-		
-		
-		//Automata = new CyclicAutomata(makeRandomGrid(width, height, 25), 25);
+      	Automata = new CyclicAutomata(makeRandomGrid(width, height, 25), 25);
       
 		initUI();
 		

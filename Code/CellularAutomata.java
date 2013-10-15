@@ -54,7 +54,7 @@ public abstract class CellularAutomata {
 			return 0;
 		}
 		
-		switch (ind){
+		switch (7-ind){
 		
 			case 0:
 				return currentGrid[x-1][y-1];
@@ -85,8 +85,6 @@ public abstract class CellularAutomata {
 			System.out.println("out of bounds shit");
 			break;
 		}
-		
-		
 		
 		/*try {
 			if(ind <= 2){
