@@ -28,7 +28,7 @@ class Surface extends JPanel {
 	public Surface (int[][] ingrid){
 		grid = ingrid;
 		
-		/*cols[0] = Color.black;
+		cols[0] = Color.black;
 		cols[1] = Color.white;
 		
 		for(int i = 2; i<cols.length; i++){
@@ -36,11 +36,18 @@ class Surface extends JPanel {
 			if(cols[i].equals(Color.black)){
 				cols[i] = Color.red;
 			}
-		}*/
+		}
 		
 		
 		for(int i = 0; i < cols.length; i++){
 			float ratio = (float)i/(float)cols.length;
+			cols[i] = new Color(ratio, ratio, ratio);
+		}
+	}
+	
+	public void setColors (int colNum){
+		for(int i = 0; i<colNum; i++){
+			float ratio = (float)(i)/(float)(colNum-1);
 			cols[i] = new Color(ratio, ratio, ratio);
 		}
 	}
@@ -70,16 +77,17 @@ class Surface extends JPanel {
     
     	for (int i = 0; i<grid.length; i++){
 			for(int j = 0; j<grid[i].length; j++){
-				
-				if(grid[i][j] < cols.length){
-					g2d.setPaint(cols[grid[i][j]]);
-				}else{
-					System.out.println("ColNo:"+grid[i][j]+" You haven't defined enough colours you shitstain");
+				if(grid[i][j] != 0){
+					if(grid[i][j] < cols.length){
+						g2d.setPaint(cols[grid[i][j]]);
+					}else{
+						System.out.println("ColNo:"+grid[i][j]+" You haven't defined enough colours you shitstain");
+					}
+					
+					int xpos = i*gridCellSize;
+					int ypos = j*gridCellSize;
+					g2d.fill(new Rectangle(xpos, ypos, gridCellSize, gridCellSize));
 				}
-				
-				int xpos = i*gridCellSize;
-				int ypos = j*gridCellSize;
-				g2d.fill(new Rectangle(xpos, ypos, gridCellSize, gridCellSize));
 			}
 		}
     }
@@ -92,6 +100,25 @@ class Surface extends JPanel {
         super.paintComponent(g);
         doDrawing(g);
     }
+    
+    
+    
+    /////////UI INTEGRATION SHIT
+    
+    public void zoomIn (){
+    	if(gridCellSize < 10){
+    		gridCellSize++;
+    		repaint();
+    	}
+    }
+    public void zoomOut(){
+    	
+    	if(gridCellSize > 1){
+    		gridCellSize--;
+    		repaint();
+    	}
+    }
+    
 }
 
 public class Skeleton extends JFrame {
@@ -101,8 +128,9 @@ public class Skeleton extends JFrame {
 	int width = 300;
 	int height = 300;
 	
-	CellularAutomata Automata;
+	int colNum;
 	
+	CellularAutomata Automata;
 	
     public Skeleton() {
 		
@@ -113,6 +141,9 @@ public class Skeleton extends JFrame {
 		String CurLine = ""; // Line read from standard in
 		InputStreamReader converter = new InputStreamReader(System.in);
 		BufferedReader in = new BufferedReader(converter);
+		
+		
+		
 		try{
 			CurLine = in.readLine();
 			
@@ -127,15 +158,20 @@ public class Skeleton extends JFrame {
 				CurLine = in.readLine();
 				if (CurLine.toUpperCase().equals("GOL")){
 					Automata = new GOLabs(makeRandomGrid(width, height, 2));
+					colNum = 2;
 				}else if (CurLine.toUpperCase().equals("CYCLIC")){
 				
 					System.out.println("Cycle Length?");
 					CurLine = in.readLine();
 					int cycleLength = Integer.parseInt(CurLine);
 					
+					colNum = cycleLength;
+					
 					Automata = new CyclicAutomata(makeRandomGrid(width, height, cycleLength), cycleLength);
 				} else if (CurLine.toUpperCase().equals("SMOOTHLIFE")){
 					System.out.println("good luck");
+					
+					colNum = 100;
 					
 					Automata = new SmoothLife (makeRandomGrid(width, height, 100));
 				}
@@ -150,7 +186,7 @@ public class Skeleton extends JFrame {
       
 		initUI();
 		
-		JFrame toolbox = new Toolbox();
+		
 		
 		runCA();
 	}
@@ -173,11 +209,15 @@ public class Skeleton extends JFrame {
 		surface = new Surface(Automata.getGrid());
 		//Automata.setSurface(surface);
 		
+		surface.setColors(colNum);
+		
 		add(surface);
 		
 		setSize(1000, 800);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setLocationRelativeTo(null);
+		
+		JFrame toolbox = new Toolbox(surface, this);
 	}
 	
 	private void renderGrid (int [][] grid){
@@ -222,12 +262,12 @@ public class Skeleton extends JFrame {
 
 
 class Toolbox extends JFrame {
-	public Toolbox (){
+	public Toolbox (Surface inSurface, Skeleton inSkeleton){
 		setVisible(true);
 		setSize(100, 400);
 		setLocation(200, 300);
 		
-		ToolboxPanel tbp = new ToolboxPanel();
+		ToolboxPanel tbp = new ToolboxPanel(inSurface, inSkeleton);
 		
 		add(tbp);
 	}
@@ -235,18 +275,34 @@ class Toolbox extends JFrame {
 
 class ToolboxPanel extends JPanel implements ActionListener {
 	
-	JButton button;
-	public ToolboxPanel () {
-		button = new JButton(" HEELOOO");
-		add(button);
-		button.setVisible(true);
-		button.addActionListener(this);
+	JButton zoomIn;
+	JButton zoomOut;
+	
+	Surface surface;
+	Skeleton skeleton;
+	
+	public ToolboxPanel (Surface inSurface, Skeleton inSkeleton) {
+		surface = inSurface;
+		skeleton = inSkeleton;
+		
+		zoomIn = new JButton("Zoom In");
+		add(zoomIn);
+		zoomIn.setVisible(true);
+		zoomIn.addActionListener(this);
+		
+		zoomOut = new JButton("Zoom Out");
+		add(zoomOut);
+		zoomOut.setVisible(true);
+		zoomOut.addActionListener(this);
 	}
 	
 	
 	public void actionPerformed(ActionEvent e) {
-		if(e.getSource() == button){
-			System.out.println("btttsts");
+		if(e.getSource() == zoomIn){
+			surface.zoomIn();
+		}
+		if(e.getSource() == zoomOut){
+			surface.zoomOut();
 		}
 	}
 }

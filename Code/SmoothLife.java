@@ -22,10 +22,10 @@ public class SmoothLife extends CellularAutomata {
 		super(grid);
 		
 		
-		scale = 1000;
+ 		scale = 10000;
 		
 		innerRad = 7;
-		outerRad = 10;
+		outerRad = 21;
 		
 		b1 = 0.278f;
 		b2 = 0.365f;
@@ -68,9 +68,9 @@ public class SmoothLife extends CellularAutomata {
 			System.out.println("M: "+m + ", N:"+ n);
 		}
 		
-		//return  (int) ((float)(scale) * sigma2(n, sigmaM(b1, d1, m), sigmaM(b2, d2, m)));
+		return  (int) ((float)(scale) * sigma2(n, sigmaM(b1, d1, m), sigmaM(b2, d2, m)));
 		
-		if(m > 0.5f){
+		/*if(m > 0.5f){
 			if(n > d2 || n < d1){
 				return 0;
 			}else{
@@ -83,9 +83,9 @@ public class SmoothLife extends CellularAutomata {
 			}else{
 				return 0;
 			}
-		}
+		}*/
 		
-		return scale;
+		//return scale;
 	}
 	
 	public float sigma1 (float x, float a) {
