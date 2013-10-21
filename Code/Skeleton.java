@@ -12,6 +12,8 @@ import java.awt.event.ActionListener;
 import javax.swing.*;
 import java.awt.Color;
 import java.io.*;
+import java.awt.image.*;
+import java.awt.image.RescaleOp;
 
 class Surface extends JPanel {
 	
@@ -19,14 +21,19 @@ class Surface extends JPanel {
 	int gridHeight;
 	int gridCellSize = 1;
 	
+	BufferedImage buffImg;
 	
 	int[][] grid;
 	
 	Color[]cols = new Color[102];	
 	
+	int maxCols = 20;
+	
 	
 	public Surface (int[][] ingrid){
 		grid = ingrid;
+		
+		buffImg = new BufferedImage(grid.length*5, grid[0].length*5, BufferedImage.TYPE_INT_RGB);
 		
 		cols[0] = Color.black;
 		cols[1] = Color.white;
@@ -50,13 +57,48 @@ class Surface extends JPanel {
 			float ratio = (float)(i)/(float)(colNum-1);
 			cols[i] = new Color(ratio, ratio, ratio);
 		}
+		
+		//
+		
+		maxCols = colNum;
 	}
 	
     private void doDrawing(Graphics g) {
         Graphics2D g2d = (Graphics2D) g;
         drawGrid(g2d);
-        colorGrid(g2d);
+        //colorGrid(g2d);
+        
+        //
+        
+       	buffImg.setRGB(0, 0, gridWidth, gridHeight, gridToRGBArray(grid), 0, gridWidth);
+       	
+       //	RescaleOp rso = new RescaleOp(1.0f, 0, null);
+       	
+        g2d.drawImage(buffImg, 0, 0, null);
     }
+    
+    
+    
+    private int [] gridToRGBArray (int[][] grid){
+    	int k = 0;
+    	
+    	float val = 1 / (float)maxCols;
+    	
+    	int[] RGBArray = new int[grid.length * grid[0].length];
+    	
+    	for(int i = 0; i < grid.length; i++){
+    		for(int j = 0; j<grid[i].length; j++){
+    			int temp = Color.getHSBColor(val * (float)grid[j][i], 0.8f, 1.0f).getRGB();
+    			
+    			RGBArray[k] = temp;
+    			
+    			k++;
+    		}
+    	}
+    	return RGBArray;
+    }
+    
+    
     
 	public void setGrid (int[][] inGrid){
 		grid = inGrid;
@@ -73,10 +115,10 @@ class Surface extends JPanel {
     	}
     }
     
-    private void colorGrid (Graphics2D g2d){
+    /*private void colorGrid (Graphics2D g2d){
     
     	for (int i = 0; i<grid.length; i++){
-			for(int j = 0; j<grid[i].length; j++){
+			for(int j = 0; j<gridHeight; j++){
 				if(grid[i][j] != 0){
 					if(grid[i][j] < cols.length){
 						g2d.setPaint(cols[grid[i][j]]);
@@ -90,11 +132,11 @@ class Surface extends JPanel {
 				}
 			}
 		}
-    }
+    }*/
+    
+    
     
     @Override
-
-
     public void paintComponent(Graphics g) {
 
         super.paintComponent(g);
