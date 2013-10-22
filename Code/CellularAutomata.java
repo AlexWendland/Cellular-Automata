@@ -50,13 +50,63 @@ public abstract class CellularAutomata {
 	}
 	
 	public int getMooreNeighbour (int x, int y, int ind){
-		if(x >= width-1 || x <= 0 || y >= height-1 || y <= 0){
+		int xp;
+		int yp;
+		
+		/*if(x >= width-1 || x <= 0 || y >= height-1 || y <= 0){
 			return 0;
-		}
+		}*/
 		
 		switch (7-ind){
 		
 			case 0:
+				xp = -1;
+				yp = -1;
+				break;
+			
+			case 1:
+				xp = 0;
+				yp = -1;
+				break;
+			
+			case 2:
+				xp = 1;
+				yp = -1;
+				break;
+				
+			case 3:
+				xp = -1;
+				yp = 0;
+				break;
+				
+			case 4:
+				xp = 1;
+				yp = 0;
+				break;
+				
+			case 5:
+				xp = -1;
+				yp = 1;
+				break;
+				
+			case 6:
+
+				xp = 0;
+				yp = 1;
+				break;
+			
+			case 7:
+				xp = 1;
+				yp = 1;
+				break;
+		
+			default:
+			System.out.println("out of bounds shit");
+			xp = 0;
+			yp = 0;
+			break;
+			
+			/*case 0:
 				return currentGrid[x-1][y-1];
 			
 			case 1:
@@ -80,11 +130,27 @@ public abstract class CellularAutomata {
 			case 7:
 				return currentGrid[x+1][y+1];
 			
-			
-			default:
-			System.out.println("out of bounds shit");
-			break;
+			*/
 		}
+		
+		int mx = x + xp;
+		int my = y + yp;
+		
+		if(mx >= width){
+			mx = xp;
+		}
+		if(mx < 0){
+			mx = width + xp;
+		}
+		if(my >= height){
+			my = yp;
+		}
+		if(my < 0){
+			my = height + yp;
+		}
+		
+		return currentGrid[mx][my];
+	
 		
 		/*try {
 			if(ind <= 2){
@@ -107,9 +173,10 @@ public abstract class CellularAutomata {
 			e.printStackTrace();
 			
 			return 0;
-		}*/
+		}
 		System.out.println("ERR: Get neighbour function called out of bounds index");
 		return -1;
+		*/
 	}
 }
 

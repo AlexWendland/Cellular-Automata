@@ -11,6 +11,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.*;
 import java.awt.Color;
+import java.awt.Stroke;
 import java.io.*;
 import java.awt.image.*;
 import java.awt.image.RescaleOp;
@@ -33,7 +34,7 @@ class Surface extends JPanel {
 	public Surface (int[][] ingrid){
 		grid = ingrid;
 		
-		buffImg = new BufferedImage(grid.length*5, grid[0].length*5, BufferedImage.TYPE_INT_RGB);
+		buffImg = new BufferedImage(grid.length, grid[0].length, BufferedImage.TYPE_INT_RGB);
 		
 		cols[0] = Color.black;
 		cols[1] = Color.white;
@@ -65,16 +66,18 @@ class Surface extends JPanel {
 	
     private void doDrawing(Graphics g) {
         Graphics2D g2d = (Graphics2D) g;
-        drawGrid(g2d);
         //colorGrid(g2d);
         
         //
         
        	buffImg.setRGB(0, 0, gridWidth, gridHeight, gridToRGBArray(grid), 0, gridWidth);
        	
-       //	RescaleOp rso = new RescaleOp(1.0f, 0, null);
-       	
-        g2d.drawImage(buffImg, 0, 0, null);
+        g2d.drawImage(buffImg, 0, 0, gridWidth*gridCellSize, gridHeight*gridCellSize, null);
+        
+        if(gridCellSize > 3){
+        	//drawGrid(g2d);
+        }
+     
     }
     
     
@@ -82,7 +85,7 @@ class Surface extends JPanel {
     private int [] gridToRGBArray (int[][] grid){
     	int k = 0;
     	
-    	float val = 1 / (float)maxCols;
+    	float val = 1 / (float)(maxCols);
     	
     	int[] RGBArray = new int[grid.length * grid[0].length];
     	
@@ -107,6 +110,7 @@ class Surface extends JPanel {
 	};
 	
     private void drawGrid(Graphics2D g2d){
+    	//g2d.setStroke(Stroke.green);
     	for(int i = 0; i < gridWidth; i++){
     		g2d.drawLine(i*gridCellSize,  0, i*gridCellSize, gridCellSize*gridHeight);
     	}
@@ -114,26 +118,6 @@ class Surface extends JPanel {
     		g2d.drawLine(0, i*gridCellSize, gridCellSize*gridWidth, i*gridCellSize);   			
     	}
     }
-    
-    /*private void colorGrid (Graphics2D g2d){
-    
-    	for (int i = 0; i<grid.length; i++){
-			for(int j = 0; j<gridHeight; j++){
-				if(grid[i][j] != 0){
-					if(grid[i][j] < cols.length){
-						g2d.setPaint(cols[grid[i][j]]);
-					}else{
-						System.out.println("ColNo:"+grid[i][j]+" You haven't defined enough colours you shitstain");
-					}
-					
-					int xpos = i*gridCellSize;
-					int ypos = j*gridCellSize;
-					g2d.fill(new Rectangle(xpos, ypos, gridCellSize, gridCellSize));
-				}
-			}
-		}
-    }*/
-    
     
     
     @Override
@@ -169,6 +153,9 @@ public class Skeleton extends JFrame {
 	
 	int width = 300;
 	int height = 300;
+	
+	int delay = 100;
+	Timer timer;
 	
 	int colNum;
 	
@@ -234,14 +221,39 @@ public class Skeleton extends JFrame {
 	}
 
 	private void runCA(){
-		int delay = 10; //milliseconds
 		ActionListener taskPerformer = new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
 				Automata.update();
 				renderGrid(Automata.getGrid());
 			}
 		};
-		new Timer(delay, taskPerformer).start();
+		timer = new Timer(delay, taskPerformer);
+		timer.start();
+	}
+	
+	
+	public void speedUp (){
+		if(delay >= 5){
+			delay -= (int)(0.3 * delay);
+			timer.stop();
+			runCA();
+			
+			System.out.println(delay);
+		}else{
+			delay = 10;
+		}
+	}
+	
+	public void slowDown(){
+		if(delay < 1500){
+			delay += (int)(0.3 * delay);
+			timer.stop();
+			runCA();
+			
+			System.out.println(delay);
+		}else{
+			delay = 1500;
+		}
 	}
 	
 	private void initUI() {
@@ -300,6 +312,7 @@ public class Skeleton extends JFrame {
 		return rGrid;
 	}
     
+    
 }
 
 
@@ -320,6 +333,9 @@ class ToolboxPanel extends JPanel implements ActionListener {
 	JButton zoomIn;
 	JButton zoomOut;
 	
+	JButton slowDown;
+	JButton speedUp;
+	
 	Surface surface;
 	Skeleton skeleton;
 	
@@ -327,7 +343,7 @@ class ToolboxPanel extends JPanel implements ActionListener {
 		surface = inSurface;
 		skeleton = inSkeleton;
 		
-		zoomIn = new JButton("Zoom In");
+		/*zoomIn = new JButton("Zoom In");
 		add(zoomIn);
 		zoomIn.setVisible(true);
 		zoomIn.addActionListener(this);
@@ -335,17 +351,44 @@ class ToolboxPanel extends JPanel implements ActionListener {
 		zoomOut = new JButton("Zoom Out");
 		add(zoomOut);
 		zoomOut.setVisible(true);
-		zoomOut.addActionListener(this);
+		zoomOut.addActionListener(this);*/
+		
+		zoomIn = initBut(zoomIn, "Zoom In");
+		zoomOut = initBut(zoomOut, "Zoom Out");
+		slowDown = initBut(slowDown, "Slow Down");
+		speedUp = initBut(speedUp, "Speed Up");
 	}
 	
 	
 	public void actionPerformed(ActionEvent e) {
-		if(e.getSource() == zoomIn){
+		
+		
+		JButton src = (JButton)e.getSource();
+		
+		if(src == zoomIn){
 			surface.zoomIn();
+			
 		}
-		if(e.getSource() == zoomOut){
+		if(src == zoomOut){
 			surface.zoomOut();
 		}
+		
+		if(src == slowDown){
+			skeleton.slowDown();
+		}
+		
+		if(src == speedUp){
+			skeleton.speedUp();
+		}
+	}
+	
+	public JButton initBut (JButton button, String label){
+		button = new JButton(label);
+		add(button);
+		button.setVisible(true);
+		button.addActionListener(this);
+		
+		return button;
 	}
 }
 
