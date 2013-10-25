@@ -156,10 +156,14 @@ class Surface extends JPanel implements MouseListener, MouseMotionListener {
     */
     
     public Boolean mouseDown = false;
+    int oldMX = 0;
+    int oldMY = 0;
     
     
     public void mousePressed(MouseEvent e){
 		mouseDown = true;
+		oldMX = e.getX();
+		oldMY = e.getY();
 	}
 	
 	public void mouseReleased(MouseEvent e) {
@@ -180,8 +184,11 @@ class Surface extends JPanel implements MouseListener, MouseMotionListener {
     
     public void mouseDragged(MouseEvent e) {
     	System.out.println("sup");
-    	xOffset = e.getX();
-    	yOffset = e.getY();
+    	xOffset += (e.getX() - oldMX);
+    	yOffset += (e.getY() - oldMY);
+    	
+    	oldMX = e.getX();
+		oldMY = e.getY();
     }
     
     public void mouseMoved(MouseEvent e){
@@ -257,8 +264,6 @@ public class Skeleton extends JFrame {
 		//Automata = new CyclicAutomata(makeRandomGrid(width, height, 25), 25);
       
 		initUI();
-		
-		
 		
 		runCA();
 	}
