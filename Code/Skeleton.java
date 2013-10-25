@@ -76,6 +76,8 @@ class Surface extends JPanel implements MouseListener, MouseMotionListener {
        	buffImg.setRGB(0, 0, gridWidth, gridHeight, gridToRGBArray(grid), 0, gridWidth);
        	
         g2d.drawImage(buffImg, xOffset, yOffset, gridWidth*gridCellSize, gridHeight*gridCellSize, null);
+        g2d.drawImage(buffImg, xOffset+gridWidth*gridCellSize, yOffset, gridWidth*gridCellSize, gridHeight*gridCellSize, null);
+        
         
         if(gridCellSize > 3){
         	//drawGrid(g2d);
@@ -183,12 +185,13 @@ class Surface extends JPanel implements MouseListener, MouseMotionListener {
 	}
     
     public void mouseDragged(MouseEvent e) {
-    	System.out.println("sup");
     	xOffset += (e.getX() - oldMX);
     	yOffset += (e.getY() - oldMY);
     	
     	oldMX = e.getX();
 		oldMY = e.getY();
+		
+		repaint();
     }
     
     public void mouseMoved(MouseEvent e){

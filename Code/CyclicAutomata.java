@@ -13,7 +13,7 @@ public class CyclicAutomata extends CellularAutomata {
 	
 	public int rules (int x, int y){
 		
-		for(int i = 0; i<7; i++){
+		for(int i = 0; i<=7; i++){
 			if(getNeighbour(x, y, i) == ((currentGrid[x][y]+1) % cycleLength)){
 				return getNeighbour(x, y, i);
 			}
