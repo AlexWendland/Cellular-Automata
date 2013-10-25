@@ -15,8 +15,11 @@ import java.awt.Stroke;
 import java.io.*;
 import java.awt.image.*;
 import java.awt.image.RescaleOp;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionListener;
 
-class Surface extends JPanel {
+class Surface extends JPanel implements MouseListener, MouseMotionListener {
 	
 	int gridWidth;
 	int gridHeight;
@@ -26,9 +29,12 @@ class Surface extends JPanel {
 	
 	int[][] grid;
 	
-	Color[]cols = new Color[102];	
+	//Color[]cols = new Color[102];	
 	
 	int maxCols = 20;
+	
+	int xOffset = 0;
+	int yOffset = 0;
 	
 	
 	public Surface (int[][] ingrid){
@@ -36,7 +42,7 @@ class Surface extends JPanel {
 		
 		buffImg = new BufferedImage(grid.length, grid[0].length, BufferedImage.TYPE_INT_RGB);
 		
-		cols[0] = Color.black;
+		/*cols[0] = Color.black;
 		cols[1] = Color.white;
 		
 		for(int i = 2; i<cols.length; i++){
@@ -50,17 +56,14 @@ class Surface extends JPanel {
 		for(int i = 0; i < cols.length; i++){
 			float ratio = (float)i/(float)cols.length;
 			cols[i] = new Color(ratio, ratio, ratio);
-		}
+		}*/
+		
+		addMouseListener(this);
+		addMouseMotionListener(this);
+		
 	}
 	
 	public void setColors (int colNum){
-		for(int i = 0; i<colNum; i++){
-			float ratio = (float)(i)/(float)(colNum-1);
-			cols[i] = new Color(ratio, ratio, ratio);
-		}
-		
-		//
-		
 		maxCols = colNum;
 	}
 	
@@ -72,7 +75,7 @@ class Surface extends JPanel {
         
        	buffImg.setRGB(0, 0, gridWidth, gridHeight, gridToRGBArray(grid), 0, gridWidth);
        	
-        g2d.drawImage(buffImg, 0, 0, gridWidth*gridCellSize, gridHeight*gridCellSize, null);
+        g2d.drawImage(buffImg, xOffset, yOffset, gridWidth*gridCellSize, gridHeight*gridCellSize, null);
         
         if(gridCellSize > 3){
         	//drawGrid(g2d);
@@ -89,17 +92,17 @@ class Surface extends JPanel {
     	
     	int[] RGBArray = new int[grid.length * grid[0].length];
     	
-    	for(int i = 0; i < grid.length; i++){
-    		for(int j = 0; j<grid[i].length; j++){
+    	for(int i = 0; i < grid[0].length; i++){
+    		for(int j = 0; j<grid.length; j++){
     			int temp = Color.getHSBColor(val * (float)grid[j][i], 0.8f, 1.0f).getRGB();
     			
-    			RGBArray[k] = temp;
+				RGBArray[k] = temp;
     			
     			k++;
     		}
     	}
     	return RGBArray;
-    }
+	}
     
     
     
@@ -143,6 +146,46 @@ class Surface extends JPanel {
     		gridCellSize--;
     		repaint();
     	}
+    }
+    
+    
+    /*
+    
+    mousy mousy
+    
+    */
+    
+    public Boolean mouseDown = false;
+    
+    
+    public void mousePressed(MouseEvent e){
+		mouseDown = true;
+	}
+	
+	public void mouseReleased(MouseEvent e) {
+		mouseDown = false;
+	}
+
+	public void mouseEntered(MouseEvent e) {
+		
+	}
+
+	public void mouseExited(MouseEvent e) {
+		
+	}
+	
+	public void mouseClicked(MouseEvent e) {
+		
+	}
+    
+    public void mouseDragged(MouseEvent e) {
+    	System.out.println("sup");
+    	xOffset = e.getX();
+    	yOffset = e.getY();
+    }
+    
+    public void mouseMoved(MouseEvent e){
+    	
     }
     
 }
@@ -392,7 +435,29 @@ class ToolboxPanel extends JPanel implements ActionListener {
 	}
 }
 
+class MouseInputs implements MouseListener {
+	public void mousePressed(MouseEvent e){
+		System.out.println(e.getX());
+	}
+	
+	
+	public void mouseReleased(MouseEvent e) {
+		System.out.println(e.getX());
+	}
 
+	public void mouseEntered(MouseEvent e) {
+		System.out.println(e.getX());
+	}
+
+	public void mouseExited(MouseEvent e) {
+		System.out.println(e.getX());
+	}
+	
+	public void mouseClicked(MouseEvent e) {
+		System.out.println(e.getX());
+	}
+	
+}
 
 
 
