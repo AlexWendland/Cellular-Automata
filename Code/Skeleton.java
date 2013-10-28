@@ -29,7 +29,6 @@ class Surface extends JPanel implements MouseListener, MouseMotionListener {
 	
 	int[][] grid;
 	
-	//Color[]cols = new Color[102];	
 	
 	int maxCols = 20;
 	
@@ -40,31 +39,32 @@ class Surface extends JPanel implements MouseListener, MouseMotionListener {
 	public Surface (int[][] ingrid){
 		grid = ingrid;
 		
-		buffImg = new BufferedImage(grid.length, grid[0].length, BufferedImage.TYPE_INT_RGB);
-		
-		/*cols[0] = Color.black;
-		cols[1] = Color.white;
-		
-		for(int i = 2; i<cols.length; i++){
-			cols[i] = cols[i-1].darker();
-			if(cols[i].equals(Color.black)){
-				cols[i] = Color.red;
-			}
-		}
-		
-		
-		for(int i = 0; i < cols.length; i++){
-			float ratio = (float)i/(float)cols.length;
-			cols[i] = new Color(ratio, ratio, ratio);
-		}*/
-		
 		addMouseListener(this);
 		addMouseMotionListener(this);
 		
 	}
 	
-	public void setColors (int colNum){
+	public void init (int colNum, int wid, int high){
 		maxCols = colNum;
+		
+		gridWidth = grid.length;
+		gridHeight = grid[0].length;
+		
+		buffImg = new BufferedImage(grid.length, grid[0].length, BufferedImage.TYPE_INT_RGB);
+	
+		int xCent = wid - 100;
+    	int yCent = high - 100;
+		
+		//gridCellSize = (int)Math.floor(Math.max((float)gridWidth / xCent*2, (float)gridHeight / yCent*2)); 
+		
+		int maxXCell = (int)((float)wid / (float)gridWidth);
+		int maxYCell = (int)((float)high / (float)gridHeight);
+		
+		gridCellSize = (int)Math.max(1, Math.min(15, Math.min(maxXCell, maxYCell)));
+		
+		xOffset = xCent/2 - (gridWidth * gridCellSize)/2;
+		yOffset = yCent/2 - (gridHeight * gridCellSize)/2;
+		
 	}
 	
     private void doDrawing(Graphics g) {
@@ -76,7 +76,7 @@ class Surface extends JPanel implements MouseListener, MouseMotionListener {
        	buffImg.setRGB(0, 0, gridWidth, gridHeight, gridToRGBArray(grid), 0, gridWidth);
        	
         g2d.drawImage(buffImg, xOffset, yOffset, gridWidth*gridCellSize, gridHeight*gridCellSize, null);
-        g2d.drawImage(buffImg, xOffset+gridWidth*gridCellSize, yOffset, gridWidth*gridCellSize, gridHeight*gridCellSize, null);
+        //g2d.drawImage(buffImg, xOffset+gridWidth*gridCellSize, yOffset, gridWidth*gridCellSize, gridHeight*gridCellSize, null);
         
         
         if(gridCellSize > 3){
@@ -108,10 +108,12 @@ class Surface extends JPanel implements MouseListener, MouseMotionListener {
     
     
     
+    
+    
 	public void setGrid (int[][] inGrid){
 		grid = inGrid;
 		gridWidth = grid.length;
-		gridHeight = grid[0].length;
+		gridHeight = grid[0].length;	
 	};
 	
     private void drawGrid(Graphics2D g2d){
@@ -137,15 +139,61 @@ class Surface extends JPanel implements MouseListener, MouseMotionListener {
     /////////UI INTEGRATION SHIT
     
     public void zoomIn (){
-    	if(gridCellSize < 10){
+    	if(gridCellSize < 15){
+    				
+    		
+    		int xCent = this.getSize().width / 2;
+    		int yCent = this.getSize().height / 2;
+    		
+    		int xDiff = xCent - xOffset;
+    		int yDiff = yCent - yOffset;
+    		
+    		int cellsX = xDiff / gridCellSize;
+    		int cellsY = yDiff / gridCellSize;
+    		
     		gridCellSize++;
+    		
+    		int newX = xOffset + cellsX * gridCellSize;		
+    		int newY = yOffset + cellsY * gridCellSize;		
+    		
+    		xOffset -= newX - xCent;
+    		yOffset -= newY - yCent;
+    		
+    		
+    		/*int newXCent = xOffset + (xCent - xOffset) * 2; 
+    		int newYCent = yOffset + (yCent - yOffset) * 2;*/
+    		/*
+    		xOffset = (xCent - xOffset);
+    		yOffset = (yCent - yOffset);
+    		*/
     		repaint();
+    		
     	}
     }
     public void zoomOut(){
     	
     	if(gridCellSize > 1){
+    		    		
+    		
+    		int xCent = this.getSize().width / 2;
+    		int yCent = this.getSize().height / 2;
+    		
+    		int xDiff = xCent - xOffset;
+    		int yDiff = yCent - yOffset;
+    		
+    		int cellsX = xDiff / gridCellSize;
+    		int cellsY = yDiff / gridCellSize;
+    		
     		gridCellSize--;
+    		
+    		int newX = xOffset + cellsX * gridCellSize;		
+    		int newY = yOffset + cellsY * gridCellSize;		
+    		
+    		xOffset -= newX - xCent;
+    		yOffset -= newY - yCent;
+    		
+    		
+    		
     		repaint();
     	}
     }
@@ -209,6 +257,7 @@ public class Skeleton extends JFrame {
 	
 	int delay = 100;
 	Timer timer;
+	boolean paused = false;
 	
 	int colNum;
 	
@@ -286,26 +335,42 @@ public class Skeleton extends JFrame {
 	public void speedUp (){
 		if(delay >= 5){
 			delay -= (int)(0.3 * delay);
-			timer.stop();
-			runCA();
-			
 			System.out.println(delay);
 		}else{
 			delay = 10;
+		}
+		
+		
+		if(!paused){
+			timer.stop();
+			runCA();
 		}
 	}
 	
 	public void slowDown(){
 		if(delay < 1500){
 			delay += (int)(0.3 * delay);
-			timer.stop();
-			runCA();
-			
 			System.out.println(delay);
 		}else{
 			delay = 1500;
 		}
+		
+		if(!paused){
+			timer.stop();
+			runCA();
+		}
 	}
+	
+	
+    public void pausePlay (){
+    	if(paused){
+    		runCA();
+    	}else{
+    		timer.stop();
+    	}
+    	paused = !paused;
+    }
+	
 	
 	private void initUI() {
 
@@ -313,16 +378,17 @@ public class Skeleton extends JFrame {
 		
 		surface = new Surface(Automata.getGrid());
 		//Automata.setSurface(surface);
-		
-		surface.setColors(colNum);
-		
 		add(surface);
-		
 		setSize(1000, 800);
+		
+		
+		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setLocationRelativeTo(null);
 		
 		JFrame toolbox = new Toolbox(surface, this);
+		
+		surface.init(colNum, getSize().width, getSize().height);
 	}
 	
 	private void renderGrid (int [][] grid){
@@ -363,6 +429,9 @@ public class Skeleton extends JFrame {
 		return rGrid;
 	}
     
+    //
+    
+    
     
 }
 
@@ -386,6 +455,8 @@ class ToolboxPanel extends JPanel implements ActionListener {
 	
 	JButton slowDown;
 	JButton speedUp;
+	JButton pausePlay;
+	
 	
 	Surface surface;
 	Skeleton skeleton;
@@ -408,6 +479,7 @@ class ToolboxPanel extends JPanel implements ActionListener {
 		zoomOut = initBut(zoomOut, "Zoom Out");
 		slowDown = initBut(slowDown, "Slow Down");
 		speedUp = initBut(speedUp, "Speed Up");
+		pausePlay = initBut(pausePlay, "Pause / Play");
 	}
 	
 	
@@ -430,6 +502,10 @@ class ToolboxPanel extends JPanel implements ActionListener {
 		
 		if(src == speedUp){
 			skeleton.speedUp();
+		}
+		
+		if(src == pausePlay){
+			skeleton.pausePlay();
 		}
 	}
 	
