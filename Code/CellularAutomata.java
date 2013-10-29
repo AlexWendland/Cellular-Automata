@@ -13,6 +13,9 @@ public abstract class CellularAutomata {
 	public int getCell (int x, int y){
 		return currentGrid[x][y];
 	}
+	public void setCell (int x, int y, int val){
+		currentGrid[x][y] = val;
+	}
 	
 	abstract public int getNeighbour (int x, int y, int ind);
 
@@ -47,6 +50,9 @@ public abstract class CellularAutomata {
 	
 	public int[][] getGrid (){
 		return currentGrid;
+	}
+	public void setGrid (int[][] grid){
+		currentGrid = grid;
 	}
 	
 	public int getMooreNeighbour (int x, int y, int ind){

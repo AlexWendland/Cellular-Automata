@@ -21,19 +21,20 @@ import java.awt.event.MouseMotionListener;
 
 class Surface extends JPanel implements MouseListener, MouseMotionListener {
 	
-	int gridWidth;
-	int gridHeight;
+	public int gridWidth;
+	public int gridHeight;
 	int gridCellSize = 1;
 	
 	BufferedImage buffImg;
 	
 	int[][] grid;
-	
-	
-	int maxCols = 20;
+	public int maxCols = 20;
 	
 	int xOffset = 0;
 	int yOffset = 0;
+	
+	public Boolean drawLines = false;
+	public Boolean repeatImage = false;
 	
 	
 	public Surface (int[][] ingrid){
@@ -75,35 +76,88 @@ class Surface extends JPanel implements MouseListener, MouseMotionListener {
         
        	buffImg.setRGB(0, 0, gridWidth, gridHeight, gridToRGBArray(grid), 0, gridWidth);
        	
-        g2d.drawImage(buffImg, xOffset, yOffset, gridWidth*gridCellSize, gridHeight*gridCellSize, null);
+       	int bitmSizeX = gridWidth * gridCellSize;
+       	int bitmSizeY = gridHeight * gridCellSize;
+       	
+        
         //g2d.drawImage(buffImg, xOffset+gridWidth*gridCellSize, yOffset, gridWidth*gridCellSize, gridHeight*gridCellSize, null);
-        
-        
-        if(gridCellSize > 3){
-        	//drawGrid(g2d);
+        if(repeatImage){
+        	int screenX = getSize().width;
+        	int screenY = getSize().height;
+        	
+        	
+        	int xRepeats = screenX / bitmSizeX;
+        	int yRepeats = screenY / bitmSizeY;
+        	
+        	int mXOffset = xOffset % bitmSizeX;
+        	int mYOffset = yOffset % bitmSizeY;
+        	
+			for(int i = -1; i < xRepeats+2; i++){
+				for(int j = -1; j < yRepeats+2; j++){
+					g2d.drawImage(buffImg, mXOffset + i*bitmSizeX, mYOffset+j*bitmSizeY, gridWidth*gridCellSize, gridHeight*gridCellSize, null);
+				}
+			}
+			
+			xOffset = mXOffset;
+			yOffset = mYOffset;
+			
+        }else{
+			g2d.drawImage(buffImg, xOffset, yOffset, gridWidth*gridCellSize, gridHeight*gridCellSize, null);
         }
-     
+        
+        
+        
+        if(drawLines && gridCellSize > 2){
+        	drawGrid(g2d);
+        }
     }
     
     
     
     private int [] gridToRGBArray (int[][] grid){
+    
+    
+    	int[] RGBArray = new int[grid.length * grid[0].length];
     	int k = 0;
     	
-    	float val = 1 / (float)(maxCols);
-    	
-    	int[] RGBArray = new int[grid.length * grid[0].length];
-    	
-    	for(int i = 0; i < grid[0].length; i++){
-    		for(int j = 0; j<grid.length; j++){
-    			int temp = Color.getHSBColor(val * (float)grid[j][i], 0.8f, 1.0f).getRGB();
+    	if(maxCols > 3){
+  		  	
+			float val = 1 / (float)(maxCols);
+    		for(int i = 0; i < grid[0].length; i++){
+    			for(int j = 0; j<grid.length; j++){
+    				int temp = Color.getHSBColor(val * (float)grid[j][i], 0.8f, 1.0f).getRGB();
+    				
+					RGBArray[k] = temp;
     			
-				RGBArray[k] = temp;
+    				k++;
+    			}
+ 		   	}
+    		return RGBArray;
+    		
+    		
+    	} else {
+    		
+    		for(int i = 0; i < grid[0].length; i++){
+    			for(int j = 0; j<grid.length; j++){
+    				
+    				int temp;
+    				
+    				if(grid[j][i] == 0){
+    					temp = Color.black.getRGB();
+    				}else if(grid[j][i] == 1){
+    					temp = Color.white.getRGB();
+    				} else {
+    					temp = Color.green.getRGB();
+    				}
+    				
+    				RGBArray[k] = temp;
     			
-    			k++;
-    		}
+    				k++;
+    			}
+ 		   	}
+    		return RGBArray;
+    		
     	}
-    	return RGBArray;
 	}
     
     
@@ -119,13 +173,17 @@ class Surface extends JPanel implements MouseListener, MouseMotionListener {
     private void drawGrid(Graphics2D g2d){
     	//g2d.setStroke(Stroke.green);
     	for(int i = 0; i < gridWidth; i++){
-    		g2d.drawLine(i*gridCellSize,  0, i*gridCellSize, gridCellSize*gridHeight);
+    		g2d.drawLine(xOffset + i*gridCellSize, yOffset, xOffset + i*gridCellSize, yOffset + gridCellSize*gridHeight);
     	}
     	for(int i = 0; i < gridHeight; i++){
-    		g2d.drawLine(0, i*gridCellSize, gridCellSize*gridWidth, i*gridCellSize);   			
+    		g2d.drawLine(xOffset, yOffset + i*gridCellSize, xOffset + gridCellSize*gridWidth, yOffset + i*gridCellSize);   			
     	}
     }
     
+        
+    public int getMaxColors (){
+    	return maxCols;
+    }
     
     @Override
     public void paintComponent(Graphics g) {
@@ -159,13 +217,6 @@ class Surface extends JPanel implements MouseListener, MouseMotionListener {
     		xOffset -= newX - xCent;
     		yOffset -= newY - yCent;
     		
-    		
-    		/*int newXCent = xOffset + (xCent - xOffset) * 2; 
-    		int newYCent = yOffset + (yCent - yOffset) * 2;*/
-    		/*
-    		xOffset = (xCent - xOffset);
-    		yOffset = (yCent - yOffset);
-    		*/
     		repaint();
     		
     	}
@@ -191,8 +242,6 @@ class Surface extends JPanel implements MouseListener, MouseMotionListener {
     		
     		xOffset -= newX - xCent;
     		yOffset -= newY - yCent;
-    		
-    		
     		
     		repaint();
     	}
@@ -261,7 +310,7 @@ public class Skeleton extends JFrame {
 	
 	int colNum;
 	
-	CellularAutomata Automata;
+	public CellularAutomata Automata;
 	
     public Skeleton() {
 		
@@ -285,7 +334,7 @@ public class Skeleton extends JFrame {
 			height = Integer.parseInt(CurLine);
 			
 			while(Automata == null){
-				System.out.println("Type?");
+				System.out.println("\nType?");
 				CurLine = in.readLine();
 				if (CurLine.toUpperCase().equals("GOL")){
 					Automata = new GOLabs(makeRandomGrid(width, height, 2));
@@ -305,6 +354,28 @@ public class Skeleton extends JFrame {
 					colNum = 100;
 					
 					Automata = new SmoothLife (makeRandomGrid(width, height, 100));
+				} else if (CurLine.toUpperCase().equals("1D")){
+								
+					colNum = 2;
+					
+					System.out.println("\nRule Number?");
+					CurLine = in.readLine();
+					
+					Automata = new ElementaryCA(makeBlankGrid(width, height), Integer.parseInt(CurLine));
+					
+					for(int i = 0; i < width; i++){
+						Automata.setCell(i, 1, (int)(0.5f+Math.random()));
+					}
+					//Automata.setCell((int)(width/2), 1, 1);
+					
+					surface.repeatImage = false;
+				} else if (CurLine.toUpperCase().equals("BML")){
+					
+					colNum = 3;
+					
+					Automata = new BMLTraffic(makeRandomGrid(width, height, 3));
+					
+					
 				}
 			}
 			
@@ -418,21 +489,28 @@ public class Skeleton extends JFrame {
 				int rand = (int)((float)nos * Math.random());
 				
 				rGrid[i][j] = rand;
-				
-				/*if( < 0.3f){
-					rGrid[i][j] = 1;
-				}else{
-					rGrid[i][j] = 0;
-				}*/
 			}
 		}
 		return rGrid;
 	}
-    
-    //
-    
-    
-    
+	
+	public int [][] makeBlankGrid (int w, int h){
+		int[][] rGrid = new int[w][h];
+		for(int i = 0; i < w; i++){
+			for(int j = 0; j<h; j++){
+				rGrid[i][j] = 0;
+			}
+		}
+		return rGrid;
+	}
+	
+	public int getGridWidth() {
+		return width;
+	}
+	public int getGridHeight (){
+		return height;
+	}
+	
 }
 
 
@@ -457,6 +535,10 @@ class ToolboxPanel extends JPanel implements ActionListener {
 	JButton speedUp;
 	JButton pausePlay;
 	
+	JButton randomGrid;
+	JButton drawGridLines;
+	JButton tileImage;
+	
 	
 	Surface surface;
 	Skeleton skeleton;
@@ -480,6 +562,9 @@ class ToolboxPanel extends JPanel implements ActionListener {
 		slowDown = initBut(slowDown, "Slow Down");
 		speedUp = initBut(speedUp, "Speed Up");
 		pausePlay = initBut(pausePlay, "Pause / Play");
+		randomGrid = initBut(randomGrid, "Random Grid");
+		drawGridLines = initBut(drawGridLines, "Grid Lines On/Off");
+		tileImage = initBut(tileImage, "Tile Image");
 	}
 	
 	
@@ -506,6 +591,18 @@ class ToolboxPanel extends JPanel implements ActionListener {
 		
 		if(src == pausePlay){
 			skeleton.pausePlay();
+		}
+		
+		if(src == randomGrid){
+			skeleton.Automata.setGrid(skeleton.makeRandomGrid(skeleton.getGridWidth(), skeleton.getGridHeight(), surface.getMaxColors()));
+		}
+		
+		if(src == drawGridLines){
+			surface.drawLines = !surface.drawLines;
+		}
+		
+		if(src == tileImage){
+			surface.repeatImage = !surface.repeatImage;
 		}
 	}
 	
