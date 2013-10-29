@@ -36,9 +36,11 @@ class Surface extends JPanel implements MouseListener, MouseMotionListener {
 	public Boolean drawLines = false;
 	public Boolean repeatImage = false;
 	
+	Skeleton skeleton;
 	
-	public Surface (int[][] ingrid){
+	public Surface (int[][] ingrid, Skeleton in){
 		grid = ingrid;
+		skeleton = in;
 		
 		addMouseListener(this);
 		addMouseMotionListener(this);
@@ -51,7 +53,7 @@ class Surface extends JPanel implements MouseListener, MouseMotionListener {
 		gridWidth = grid.length;
 		gridHeight = grid[0].length;
 		
-		buffImg = new BufferedImage(grid.length, grid[0].length, BufferedImage.TYPE_INT_RGB);
+		buffImg = new BufferedImage(grid.length-1, grid[0].length-1, BufferedImage.TYPE_INT_RGB);
 	
 		int xCent = wid - 100;
     	int yCent = high - 100;
@@ -74,9 +76,9 @@ class Surface extends JPanel implements MouseListener, MouseMotionListener {
         
         //
         
-       	buffImg.setRGB(0, 0, gridWidth, gridHeight, gridToRGBArray(grid), 0, gridWidth);
-       	
-       	int bitmSizeX = gridWidth * gridCellSize;
+       	buffImg.setRGB(0, 0, gridWidth-1, gridHeight-1, gridToRGBArray(grid), 0, gridWidth);
+	
+		int bitmSizeX = gridWidth * gridCellSize;
        	int bitmSizeY = gridHeight * gridCellSize;
        	
         
@@ -247,6 +249,15 @@ class Surface extends JPanel implements MouseListener, MouseMotionListener {
     	}
     }
     
+    public void drawPixelFromMouse(int x, int y, int val){
+    	int xp = (((x-xOffset - 1)/gridCellSize)+gridWidth) % gridWidth;
+    	int yp = (((y-yOffset - 1)/gridCellSize)+gridHeight) % gridHeight;
+    	
+    	
+    	skeleton.Automata.setCell(xp, yp, val);
+    	repaint();
+    }
+    
     
     /*
     
@@ -260,9 +271,15 @@ class Surface extends JPanel implements MouseListener, MouseMotionListener {
     
     
     public void mousePressed(MouseEvent e){
-		mouseDown = true;
-		oldMX = e.getX();
-		oldMY = e.getY();
+		if(SwingUtilities.isRightMouseButton(e)){
+			mouseDown = true;
+			oldMX = e.getX();
+			oldMY = e.getY();
+		}
+		
+		if(SwingUtilities.isLeftMouseButton(e)){
+			drawPixelFromMouse(e.getX(), e.getY(), 1);
+		}
 	}
 	
 	public void mouseReleased(MouseEvent e) {
@@ -282,13 +299,18 @@ class Surface extends JPanel implements MouseListener, MouseMotionListener {
 	}
     
     public void mouseDragged(MouseEvent e) {
-    	xOffset += (e.getX() - oldMX);
-    	yOffset += (e.getY() - oldMY);
+    	if(SwingUtilities.isRightMouseButton(e)){
+    		xOffset += (e.getX() - oldMX);
+    		yOffset += (e.getY() - oldMY);
     	
-    	oldMX = e.getX();
-		oldMY = e.getY();
+    		oldMX = e.getX();
+			oldMY = e.getY();
 		
-		repaint();
+			repaint();
+		}
+		if(SwingUtilities.isLeftMouseButton(e)){
+			drawPixelFromMouse(e.getX(), e.getY(), 1);
+		}
     }
     
     public void mouseMoved(MouseEvent e){
@@ -337,7 +359,16 @@ public class Skeleton extends JFrame {
 				System.out.println("\nType?");
 				CurLine = in.readLine();
 				if (CurLine.toUpperCase().equals("GOL")){
-					Automata = new GOLabs(makeRandomGrid(width, height, 2));
+					
+					float blankPerc = 2.0f;
+					while(blankPerc > 1.0f){
+						System.out.println("\nBlank Percent?");
+						CurLine = in.readLine();
+					
+						blankPerc = Float.parseFloat(CurLine);
+					}
+				
+					Automata = new GOLabs(makeRandomGrid(width, height, 2, blankPerc));
 					colNum = 2;
 				}else if (CurLine.toUpperCase().equals("CYCLIC")){
 				
@@ -373,8 +404,16 @@ public class Skeleton extends JFrame {
 					
 					colNum = 3;
 					
-					Automata = new BMLTraffic(makeRandomGrid(width, height, 3));
+					float blankPerc = 2.0f;
 					
+					while(blankPerc > 1.0f){
+						System.out.println("\nBlank Percent?");
+						CurLine = in.readLine();
+					
+						blankPerc = Float.parseFloat(CurLine);
+					}
+					
+					Automata = new BMLTraffic(makeRandomGrid(width, height, 3, blankPerc));
 					
 				}
 			}
@@ -404,11 +443,11 @@ public class Skeleton extends JFrame {
 	
 	
 	public void speedUp (){
-		if(delay >= 5){
+		if(delay > 1){
 			delay -= (int)(0.3 * delay);
 			System.out.println(delay);
 		}else{
-			delay = 10;
+			delay = 1;
 		}
 		
 		
@@ -447,7 +486,7 @@ public class Skeleton extends JFrame {
 
 		setTitle("waddup");
 		
-		surface = new Surface(Automata.getGrid());
+		surface = new Surface(Automata.getGrid(), this);
 		//Automata.setSurface(surface);
 		add(surface);
 		setSize(1000, 800);
@@ -486,13 +525,31 @@ public class Skeleton extends JFrame {
 		for(int i = 0; i < w; i++){
 			for(int j = 0; j<h; j++){
 				
-				int rand = (int)((float)nos * Math.random());
+				int rand = (int)((float)(nos) * Math.random());
 				
 				rGrid[i][j] = rand;
 			}
 		}
 		return rGrid;
 	}
+	
+	public int[][] makeRandomGrid (int w, int h, int nos, float blanks){
+    	int[][] rGrid = new int[w][h];
+		for(int i = 0; i < w; i++){
+			for(int j = 0; j<h; j++){
+				
+				float rand = (float)Math.random();
+				
+				if(rand < blanks){
+					rGrid[i][j] = 0;
+				}else{
+					rGrid[i][j] = (int)(((float)(nos-1)) * Math.random()) + 1;
+				}
+			}
+		}
+		return rGrid;
+	}
+	
 	
 	public int [][] makeBlankGrid (int w, int h){
 		int[][] rGrid = new int[w][h];

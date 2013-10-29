@@ -146,13 +146,13 @@ public abstract class CellularAutomata {
 			mx = xp;
 		}
 		if(mx < 0){
-			mx = width + xp;
+			mx = width-1 + xp;
 		}
 		if(my >= height){
 			my = yp;
 		}
 		if(my < 0){
-			my = height + yp;
+			my = height-1 + yp;
 		}
 		
 		return currentGrid[mx][my];
