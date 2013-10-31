@@ -18,235 +18,13 @@ import java.awt.image.RescaleOp;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
-
-class Surface extends JPanel implements MouseListener, MouseMotionListener {
-	
-	int gridWidth;
-	int gridHeight;
-	int gridCellSize = 1;
-	
-	BufferedImage buffImg;
-	
-	int[][] grid;
-	
-	
-	int maxCols = 20;
-	
-	int xOffset = 0;
-	int yOffset = 0;
-	
-	
-	public Surface (int[][] ingrid){
-		grid = ingrid;
-		
-		addMouseListener(this);
-		addMouseMotionListener(this);
-		
-	}
-	
-	public void init (int colNum, int wid, int high){
-		maxCols = colNum;
-		
-		gridWidth = grid.length;
-		gridHeight = grid[0].length;
-		
-		buffImg = new BufferedImage(grid.length, grid[0].length, BufferedImage.TYPE_INT_RGB);
-	
-		int xCent = wid - 100;
-    	int yCent = high - 100;
-		
-		//gridCellSize = (int)Math.floor(Math.max((float)gridWidth / xCent*2, (float)gridHeight / yCent*2)); 
-		
-		int maxXCell = (int)((float)wid / (float)gridWidth);
-		int maxYCell = (int)((float)high / (float)gridHeight);
-		
-		gridCellSize = (int)Math.max(1, Math.min(15, Math.min(maxXCell, maxYCell)));
-		
-		xOffset = xCent/2 - (gridWidth * gridCellSize)/2;
-		yOffset = yCent/2 - (gridHeight * gridCellSize)/2;
-		
-	}
-	
-    private void doDrawing(Graphics g) {
-        Graphics2D g2d = (Graphics2D) g;
-        //colorGrid(g2d);
-        
-        //
-        
-       	buffImg.setRGB(0, 0, gridWidth, gridHeight, gridToRGBArray(grid), 0, gridWidth);
-       	
-        g2d.drawImage(buffImg, xOffset, yOffset, gridWidth*gridCellSize, gridHeight*gridCellSize, null);
-        //g2d.drawImage(buffImg, xOffset+gridWidth*gridCellSize, yOffset, gridWidth*gridCellSize, gridHeight*gridCellSize, null);
-        
-        
-        if(gridCellSize > 3){
-        	//drawGrid(g2d);
-        }
-     
-    }
-    
-    
-    
-    private int [] gridToRGBArray (int[][] grid){
-    	int k = 0;
-    	
-    	float val = 1 / (float)(maxCols);
-    	
-    	int[] RGBArray = new int[grid.length * grid[0].length];
-    	
-    	for(int i = 0; i < grid[0].length; i++){
-    		for(int j = 0; j<grid.length; j++){
-    			int temp = Color.getHSBColor(val * (float)grid[j][i], 0.8f, 1.0f).getRGB();
-    			
-				RGBArray[k] = temp;
-    			
-    			k++;
-    		}
-    	}
-    	return RGBArray;
-	}
-    
-    
-    
-    
-    
-	public void setGrid (int[][] inGrid){
-		grid = inGrid;
-		gridWidth = grid.length;
-		gridHeight = grid[0].length;	
-	};
-	
-    private void drawGrid(Graphics2D g2d){
-    	//g2d.setStroke(Stroke.green);
-    	for(int i = 0; i < gridWidth; i++){
-    		g2d.drawLine(i*gridCellSize,  0, i*gridCellSize, gridCellSize*gridHeight);
-    	}
-    	for(int i = 0; i < gridHeight; i++){
-    		g2d.drawLine(0, i*gridCellSize, gridCellSize*gridWidth, i*gridCellSize);   			
-    	}
-    }
-    
-    
-    @Override
-    public void paintComponent(Graphics g) {
-
-        super.paintComponent(g);
-        doDrawing(g);
-    }
-    
-    
-    
-    /////////UI INTEGRATION SHIT
-    
-    public void zoomIn (){
-    	if(gridCellSize < 15){
-    				
-    		
-    		int xCent = this.getSize().width / 2;
-    		int yCent = this.getSize().height / 2;
-    		
-    		int xDiff = xCent - xOffset;
-    		int yDiff = yCent - yOffset;
-    		
-    		int cellsX = xDiff / gridCellSize;
-    		int cellsY = yDiff / gridCellSize;
-    		
-    		gridCellSize++;
-    		
-    		int newX = xOffset + cellsX * gridCellSize;		
-    		int newY = yOffset + cellsY * gridCellSize;		
-    		
-    		xOffset -= newX - xCent;
-    		yOffset -= newY - yCent;
-    		
-    		
-    		/*int newXCent = xOffset + (xCent - xOffset) * 2; 
-    		int newYCent = yOffset + (yCent - yOffset) * 2;*/
-    		/*
-    		xOffset = (xCent - xOffset);
-    		yOffset = (yCent - yOffset);
-    		*/
-    		repaint();
-    		
-    	}
-    }
-    public void zoomOut(){
-    	
-    	if(gridCellSize > 1){
-    		    		
-    		
-    		int xCent = this.getSize().width / 2;
-    		int yCent = this.getSize().height / 2;
-    		
-    		int xDiff = xCent - xOffset;
-    		int yDiff = yCent - yOffset;
-    		
-    		int cellsX = xDiff / gridCellSize;
-    		int cellsY = yDiff / gridCellSize;
-    		
-    		gridCellSize--;
-    		
-    		int newX = xOffset + cellsX * gridCellSize;		
-    		int newY = yOffset + cellsY * gridCellSize;		
-    		
-    		xOffset -= newX - xCent;
-    		yOffset -= newY - yCent;
-    		
-    		
-    		
-    		repaint();
-    	}
-    }
-    
-    
-    /*
-    
-    mousy mousy
-    
-    */
-    
-    public Boolean mouseDown = false;
-    int oldMX = 0;
-    int oldMY = 0;
-    
-    
-    public void mousePressed(MouseEvent e){
-		mouseDown = true;
-		oldMX = e.getX();
-		oldMY = e.getY();
-	}
-	
-	public void mouseReleased(MouseEvent e) {
-		mouseDown = false;
-	}
-
-	public void mouseEntered(MouseEvent e) {
-		
-	}
-
-	public void mouseExited(MouseEvent e) {
-		
-	}
-	
-	public void mouseClicked(MouseEvent e) {
-		
-	}
-    
-    public void mouseDragged(MouseEvent e) {
-    	xOffset += (e.getX() - oldMX);
-    	yOffset += (e.getY() - oldMY);
-    	
-    	oldMX = e.getX();
-		oldMY = e.getY();
-		
-		repaint();
-    }
-    
-    public void mouseMoved(MouseEvent e){
-    	
-    }
-    
-}
+import java.awt.event.KeyListener;
+import java.awt.event.KeyEvent;
+import java.awt.*;
+import java.awt.image.*;
+import java.io.*;
+import java.net.URL;
+import javax.imageio.*;
 
 public class Skeleton extends JFrame {
 	
@@ -261,7 +39,7 @@ public class Skeleton extends JFrame {
 	
 	int colNum;
 	
-	CellularAutomata Automata;
+	public CellularAutomata Automata;
 	
     public Skeleton() {
 		
@@ -285,10 +63,19 @@ public class Skeleton extends JFrame {
 			height = Integer.parseInt(CurLine);
 			
 			while(Automata == null){
-				System.out.println("Type?");
+				System.out.println("\nType?");
 				CurLine = in.readLine();
 				if (CurLine.toUpperCase().equals("GOL")){
-					Automata = new GOLabs(makeRandomGrid(width, height, 2));
+					
+					float blankPerc = 2.0f;
+					while(blankPerc > 1.0f){
+						System.out.println("\nBlank Percent?");
+						CurLine = in.readLine();
+					
+						blankPerc = Float.parseFloat(CurLine);
+					}
+				
+					Automata = new GOLabs(makeRandomGrid(width, height, 2, blankPerc));
 					colNum = 2;
 				}else if (CurLine.toUpperCase().equals("CYCLIC")){
 				
@@ -305,6 +92,36 @@ public class Skeleton extends JFrame {
 					colNum = 100;
 					
 					Automata = new SmoothLife (makeRandomGrid(width, height, 100));
+				} else if (CurLine.toUpperCase().equals("1D")){
+								
+					colNum = 2;
+					
+					System.out.println("\nRule Number?");
+					CurLine = in.readLine();
+					
+					Automata = new ElementaryCA(makeBlankGrid(width, height), Integer.parseInt(CurLine));
+					
+					for(int i = 0; i < width; i++){
+						Automata.setCell(i, 1, (int)(0.5f+Math.random()));
+					}
+					//Automata.setCell((int)(width/2), 1, 1);
+					
+					surface.repeatImage = false;
+				} else if (CurLine.toUpperCase().equals("BML")){
+					
+					colNum = 3;
+					
+					float blankPerc = 2.0f;
+					
+					while(blankPerc > 1.0f){
+						System.out.println("\nBlank Percent?");
+						CurLine = in.readLine();
+					
+						blankPerc = Float.parseFloat(CurLine);
+					}
+					
+					Automata = new BMLTraffic(makeRandomGrid(width, height, 3, blankPerc));
+					
 				}
 				else if (CurLine.toUpperCase().equals("ALEX")) {
 					System.out.println("Colour number?");
@@ -342,11 +159,11 @@ public class Skeleton extends JFrame {
 	
 	
 	public void speedUp (){
-		if(delay >= 5){
-			delay -= (int)(0.3 * delay);
+		if(delay > 1){
+			delay = Math.min(delay - (int)(0.3 * delay), delay - 1);
 			System.out.println(delay);
 		}else{
-			delay = 10;
+			delay = 1;
 		}
 		
 		
@@ -358,7 +175,7 @@ public class Skeleton extends JFrame {
 	
 	public void slowDown(){
 		if(delay < 1500){
-			delay += (int)(0.3 * delay);
+			delay = Math.max(delay + (int)(0.3 * delay), delay + 3);
 			System.out.println(delay);
 		}else{
 			delay = 1500;
@@ -376,6 +193,7 @@ public class Skeleton extends JFrame {
     		runCA();
     	}else{
     		timer.stop();
+    		surface.repaint();
     	}
     	paused = !paused;
     }
@@ -385,10 +203,12 @@ public class Skeleton extends JFrame {
 
 		setTitle("waddup");
 		
-		surface = new Surface(Automata.getGrid());
+		surface = new Surface(Automata.getGrid(), this);
 		//Automata.setSurface(surface);
 		add(surface);
 		setSize(1000, 800);
+		
+		this.addKeyListener(surface);
 		
 		
 		
@@ -424,24 +244,49 @@ public class Skeleton extends JFrame {
 		for(int i = 0; i < w; i++){
 			for(int j = 0; j<h; j++){
 				
-				int rand = (int)((float)nos * Math.random());
+				int rand = (int)((float)(nos) * Math.random());
 				
 				rGrid[i][j] = rand;
-				
-				/*if( < 0.3f){
-					rGrid[i][j] = 1;
-				}else{
-					rGrid[i][j] = 0;
-				}*/
 			}
 		}
 		return rGrid;
 	}
-    
-    //
-    
-    
-    
+	
+	public int[][] makeRandomGrid (int w, int h, int nos, float blanks){
+    	int[][] rGrid = new int[w][h];
+		for(int i = 0; i < w; i++){
+			for(int j = 0; j<h; j++){
+				
+				float rand = (float)Math.random();
+				
+				if(rand < blanks){
+					rGrid[i][j] = 0;
+				}else{
+					rGrid[i][j] = (int)(((float)(nos-1)) * Math.random()) + 1;
+				}
+			}
+		}
+		return rGrid;
+	}
+	
+	
+	public int [][] makeBlankGrid (int w, int h){
+		int[][] rGrid = new int[w][h];
+		for(int i = 0; i < w; i++){
+			for(int j = 0; j<h; j++){
+				rGrid[i][j] = 0;
+			}
+		}
+		return rGrid;
+	}
+	
+	public int getGridWidth() {
+		return width;
+	}
+	public int getGridHeight (){
+		return height;
+	}
+	
 }
 
 
@@ -466,29 +311,32 @@ class ToolboxPanel extends JPanel implements ActionListener {
 	JButton speedUp;
 	JButton pausePlay;
 	
+	JButton randomGrid;
+	JButton drawGridLines;
+	JButton tileImage;
 	
+	JButton loadFile;
+	JButton saveFile;
+
 	Surface surface;
 	Skeleton skeleton;
+	
+	final JFileChooser fc = new JFileChooser();
 	
 	public ToolboxPanel (Surface inSurface, Skeleton inSkeleton) {
 		surface = inSurface;
 		skeleton = inSkeleton;
-		
-		/*zoomIn = new JButton("Zoom In");
-		add(zoomIn);
-		zoomIn.setVisible(true);
-		zoomIn.addActionListener(this);
-		
-		zoomOut = new JButton("Zoom Out");
-		add(zoomOut);
-		zoomOut.setVisible(true);
-		zoomOut.addActionListener(this);*/
 		
 		zoomIn = initBut(zoomIn, "Zoom In");
 		zoomOut = initBut(zoomOut, "Zoom Out");
 		slowDown = initBut(slowDown, "Slow Down");
 		speedUp = initBut(speedUp, "Speed Up");
 		pausePlay = initBut(pausePlay, "Pause / Play");
+		randomGrid = initBut(randomGrid, "Random Grid");
+		drawGridLines = initBut(drawGridLines, "Grid Lines On/Off");
+		tileImage = initBut(tileImage, "Tile Image");
+		loadFile = initBut(loadFile, "Load File");
+		saveFile = initBut(saveFile, "Save File");
 	}
 	
 	
@@ -516,6 +364,29 @@ class ToolboxPanel extends JPanel implements ActionListener {
 		if(src == pausePlay){
 			skeleton.pausePlay();
 		}
+		
+		if(src == randomGrid){
+			skeleton.Automata.setGrid(skeleton.makeRandomGrid(skeleton.getGridWidth(), skeleton.getGridHeight(), surface.getMaxColors()));
+			surface.setGrid(skeleton.Automata.getGrid());
+			surface.repaint();
+		}
+		
+		if(src == drawGridLines){
+			surface.drawLines = !surface.drawLines;
+		}
+		
+		if(src == tileImage){
+			surface.repeatImage = !surface.repeatImage;
+			surface.repaint();
+		}
+		
+		if(src == loadFile){
+			loadFile();
+		}
+		
+		if(src == saveFile){
+			saveFile();
+		}
 	}
 	
 	public JButton initBut (JButton button, String label){
@@ -526,31 +397,33 @@ class ToolboxPanel extends JPanel implements ActionListener {
 		
 		return button;
 	}
+	
+	public void saveFile (){
+		int returnVal = fc.showSaveDialog(this);
+		
+		//BufferedWriter
+	}
+	
+	public void loadFile(){
+		int returnVal = fc.showOpenDialog(this);
+	}
+	
+	/*public gridToString(int[][] grid){
+		
+	}*/
 }
 
-class MouseInputs implements MouseListener {
-	public void mousePressed(MouseEvent e){
-		System.out.println(e.getX());
-	}
-	
-	
-	public void mouseReleased(MouseEvent e) {
-		System.out.println(e.getX());
-	}
 
-	public void mouseEntered(MouseEvent e) {
-		System.out.println(e.getX());
-	}
 
-	public void mouseExited(MouseEvent e) {
-		System.out.println(e.getX());
-	}
-	
-	public void mouseClicked(MouseEvent e) {
-		System.out.println(e.getX());
-	}
-	
-}
+
+
+
+
+
+
+
+
+
 
 
 
