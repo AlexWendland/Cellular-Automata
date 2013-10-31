@@ -33,6 +33,7 @@ public abstract class CellularAutomata {
 		width = grid.length;
 		height = grid[0].length;
 		
+		System.out.println("wid: "+width+" h:"+height);
 	}
 	
 	
@@ -42,6 +43,11 @@ public abstract class CellularAutomata {
 		for(int x = 0; x < width; x++){
 			for (int y = 0; y < height; y++){
 				newGrid[x][y] = rules(x, y);
+				
+				/*if(x == width-1){
+					System.out.println("edge val:"+newGrid[x][y]);
+					System.out.println("hhhhh"+newGrid.length);
+				}*/
 			}
 		}
 		currentGrid = newGrid;
@@ -142,17 +148,17 @@ public abstract class CellularAutomata {
 		int mx = x + xp;
 		int my = y + yp;
 		
-		if(mx >= width){
-			mx = xp;
+		if(mx == width){
+			mx = 0;
 		}
 		if(mx < 0){
-			mx = width-1 + xp;
+			mx = width-1;
 		}
-		if(my >= height){
-			my = yp;
+		if(my == height){
+			my = 0;
 		}
 		if(my < 0){
-			my = height-1 + yp;
+			my = height-1;
 		}
 		
 		return currentGrid[mx][my];

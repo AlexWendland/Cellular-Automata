@@ -18,14 +18,24 @@ import java.awt.image.RescaleOp;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
+import java.awt.event.KeyListener;
+import java.awt.event.KeyEvent;
+import java.awt.*;
+import java.awt.image.*;
+import java.io.*;
+import java.net.URL;
+import javax.imageio.*;
 
-class Surface extends JPanel implements MouseListener, MouseMotionListener {
+
+class Surface extends JPanel implements MouseListener, MouseMotionListener, KeyListener {
 	
 	public int gridWidth;
 	public int gridHeight;
 	int gridCellSize = 1;
 	
 	BufferedImage buffImg;
+	BufferedImage pausedImage;
+	File img;
 	
 	int[][] grid;
 	public int maxCols = 20;
@@ -38,13 +48,26 @@ class Surface extends JPanel implements MouseListener, MouseMotionListener {
 	
 	Skeleton skeleton;
 	
+	int drawingVal = 0;
+	
+	int gridMouseX;
+	int gridMouseY;
+	
 	public Surface (int[][] ingrid, Skeleton in){
 		grid = ingrid;
 		skeleton = in;
 		
+		img = new File("pausedImage.png");
+		
+		
+		try {
+			pausedImage = ImageIO.read(img);
+         } catch (IOException e) {
+			System.out.println(e.getMessage());
+         }
+		
 		addMouseListener(this);
 		addMouseMotionListener(this);
-		
 	}
 	
 	public void init (int colNum, int wid, int high){
@@ -53,7 +76,7 @@ class Surface extends JPanel implements MouseListener, MouseMotionListener {
 		gridWidth = grid.length;
 		gridHeight = grid[0].length;
 		
-		buffImg = new BufferedImage(grid.length-1, grid[0].length-1, BufferedImage.TYPE_INT_RGB);
+		buffImg = new BufferedImage(grid.length, grid[0].length, BufferedImage.TYPE_INT_RGB);
 	
 		int xCent = wid - 100;
     	int yCent = high - 100;
@@ -76,7 +99,7 @@ class Surface extends JPanel implements MouseListener, MouseMotionListener {
         
         //
         
-       	buffImg.setRGB(0, 0, gridWidth-1, gridHeight-1, gridToRGBArray(grid), 0, gridWidth);
+       	buffImg.setRGB(0, 0, gridWidth, gridHeight, gridToRGBArray(grid), 0, gridWidth);
 	
 		int bitmSizeX = gridWidth * gridCellSize;
        	int bitmSizeY = gridHeight * gridCellSize;
@@ -112,6 +135,10 @@ class Surface extends JPanel implements MouseListener, MouseMotionListener {
         if(drawLines && gridCellSize > 2){
         	drawGrid(g2d);
         }
+        
+        if(skeleton.paused){
+        	g2d.drawImage(pausedImage, 0, 0, null);
+		}
     }
     
     
@@ -122,44 +149,34 @@ class Surface extends JPanel implements MouseListener, MouseMotionListener {
     	int[] RGBArray = new int[grid.length * grid[0].length];
     	int k = 0;
     	
-    	if(maxCols > 3){
+    	//if(maxCols > 3){
   		  	
 			float val = 1 / (float)(maxCols);
     		for(int i = 0; i < grid[0].length; i++){
     			for(int j = 0; j<grid.length; j++){
-    				int temp = Color.getHSBColor(val * (float)grid[j][i], 0.8f, 1.0f).getRGB();
     				
-					RGBArray[k] = temp;
-    			
-    				k++;
-    			}
- 		   	}
-    		return RGBArray;
-    		
-    		
-    	} else {
-    		
-    		for(int i = 0; i < grid[0].length; i++){
-    			for(int j = 0; j<grid.length; j++){
+    				Boolean fake = false;
+    				int drawCol = grid[j][i];
     				
-    				int temp;
-    				
-    				if(grid[j][i] == 0){
-    					temp = Color.black.getRGB();
-    				}else if(grid[j][i] == 1){
-    					temp = Color.white.getRGB();
-    				} else {
-    					temp = Color.green.getRGB();
+    				if(mouseIn && i == gridMouseY && j == gridMouseX){
+    					drawCol = drawingVal;
+    					fake = true;
     				}
     				
-    				RGBArray[k] = temp;
+    				if(drawCol != 0){
+    					int temp = Color.getHSBColor(val * (float)drawCol, 0.8f, 1.0f).getRGB();
+    					if(fake){
+    						temp = Color.getHSBColor(val * (float)drawCol, 0.4f, 0.8f).getRGB();
+    					}
+						RGBArray[k] = temp;
+    				}else{
+    					RGBArray[k] = Color.black.getRGB();
+    				}
     			
     				k++;
     			}
  		   	}
     		return RGBArray;
-    		
-    	}
 	}
     
     
@@ -249,12 +266,9 @@ class Surface extends JPanel implements MouseListener, MouseMotionListener {
     	}
     }
     
-    public void drawPixelFromMouse(int x, int y, int val){
-    	int xp = (((x-xOffset - 1)/gridCellSize)+gridWidth) % gridWidth;
-    	int yp = (((y-yOffset - 1)/gridCellSize)+gridHeight) % gridHeight;
-    	
-    	
-    	skeleton.Automata.setCell(xp, yp, val);
+    public void drawPixelFromMouse(){
+    
+       	skeleton.Automata.setCell(gridMouseX, gridMouseY, drawingVal);
     	repaint();
     }
     
@@ -266,6 +280,7 @@ class Surface extends JPanel implements MouseListener, MouseMotionListener {
     */
     
     public Boolean mouseDown = false;
+    public Boolean mouseIn = false;
     int oldMX = 0;
     int oldMY = 0;
     
@@ -278,7 +293,7 @@ class Surface extends JPanel implements MouseListener, MouseMotionListener {
 		}
 		
 		if(SwingUtilities.isLeftMouseButton(e)){
-			drawPixelFromMouse(e.getX(), e.getY(), 1);
+			drawPixelFromMouse();
 		}
 	}
 	
@@ -287,18 +302,35 @@ class Surface extends JPanel implements MouseListener, MouseMotionListener {
 	}
 
 	public void mouseEntered(MouseEvent e) {
-		
+		mouseIn = true;
 	}
 
 	public void mouseExited(MouseEvent e) {
-		
+		mouseIn = false;
 	}
 	
-	public void mouseClicked(MouseEvent e) {
-		
+	public void mouseClicked(MouseEvent e) { }
+	
+	public void keyPressed (KeyEvent e){
+		//System.out.println(e.getKeyCode());
+		if(e.getKeyCode() == 32){
+			skeleton.pausePlay();
+		}else{
+			drawingVal = e.getKeyCode() - 49;
+		}
+		repaint();
 	}
+	
+	public void keyReleased (KeyEvent e){ }
+    
+    public void keyTyped (KeyEvent e){
+    	//System.out.println(e.getKeyCode());
+    }
     
     public void mouseDragged(MouseEvent e) {
+    	gridMouseX = (((e.getX()-xOffset)/gridCellSize)+gridWidth) % gridWidth;
+    	gridMouseY = (((e.getY()-yOffset)/gridCellSize)+gridHeight) % gridHeight;
+    	
     	if(SwingUtilities.isRightMouseButton(e)){
     		xOffset += (e.getX() - oldMX);
     		yOffset += (e.getY() - oldMY);
@@ -309,13 +341,21 @@ class Surface extends JPanel implements MouseListener, MouseMotionListener {
 			repaint();
 		}
 		if(SwingUtilities.isLeftMouseButton(e)){
-			drawPixelFromMouse(e.getX(), e.getY(), 1);
+			drawPixelFromMouse();
 		}
+		repaint();
     }
     
     public void mouseMoved(MouseEvent e){
-    	
+    	gridMouseX = (((e.getX()-xOffset)/gridCellSize)+gridWidth*20) % gridWidth;
+    	gridMouseY = (((e.getY()-yOffset)/gridCellSize)+gridHeight*20) % gridHeight;
+    	repaint();
     }
+    
+    
+    ////
+    
+    
     
 }
 
@@ -444,7 +484,7 @@ public class Skeleton extends JFrame {
 	
 	public void speedUp (){
 		if(delay > 1){
-			delay -= (int)(0.3 * delay);
+			delay = Math.min(delay - (int)(0.3 * delay), delay - 1);
 			System.out.println(delay);
 		}else{
 			delay = 1;
@@ -459,7 +499,7 @@ public class Skeleton extends JFrame {
 	
 	public void slowDown(){
 		if(delay < 1500){
-			delay += (int)(0.3 * delay);
+			delay = Math.max(delay + (int)(0.3 * delay), delay + 3);
 			System.out.println(delay);
 		}else{
 			delay = 1500;
@@ -477,6 +517,7 @@ public class Skeleton extends JFrame {
     		runCA();
     	}else{
     		timer.stop();
+    		surface.repaint();
     	}
     	paused = !paused;
     }
@@ -490,6 +531,8 @@ public class Skeleton extends JFrame {
 		//Automata.setSurface(surface);
 		add(surface);
 		setSize(1000, 800);
+		
+		this.addKeyListener(surface);
 		
 		
 		
@@ -652,6 +695,8 @@ class ToolboxPanel extends JPanel implements ActionListener {
 		
 		if(src == randomGrid){
 			skeleton.Automata.setGrid(skeleton.makeRandomGrid(skeleton.getGridWidth(), skeleton.getGridHeight(), surface.getMaxColors()));
+			surface.setGrid(skeleton.Automata.getGrid());
+			surface.repaint();
 		}
 		
 		if(src == drawGridLines){
@@ -660,6 +705,7 @@ class ToolboxPanel extends JPanel implements ActionListener {
 		
 		if(src == tileImage){
 			surface.repeatImage = !surface.repeatImage;
+			surface.repaint();
 		}
 	}
 	
@@ -671,30 +717,6 @@ class ToolboxPanel extends JPanel implements ActionListener {
 		
 		return button;
 	}
-}
-
-class MouseInputs implements MouseListener {
-	public void mousePressed(MouseEvent e){
-		System.out.println(e.getX());
-	}
-	
-	
-	public void mouseReleased(MouseEvent e) {
-		System.out.println(e.getX());
-	}
-
-	public void mouseEntered(MouseEvent e) {
-		System.out.println(e.getX());
-	}
-
-	public void mouseExited(MouseEvent e) {
-		System.out.println(e.getX());
-	}
-	
-	public void mouseClicked(MouseEvent e) {
-		System.out.println(e.getX());
-	}
-	
 }
 
 
