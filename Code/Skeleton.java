@@ -123,14 +123,43 @@ public class Skeleton extends JFrame {
 					Automata = new BMLTraffic(makeRandomGrid(width, height, 3, blankPerc));
 					
 				}
-				else if (CurLine.toUpperCase().equals("ALEX")) {
+				else if (CurLine.toUpperCase().equals("SALEX")) {
 					System.out.println("Colour number?");
 					colNum = Integer.parseInt(in.readLine());
 					System.out.println("Continuous time? (0 for No, 1 for Yes)");
 					int type = Integer.parseInt(in.readLine());
+					float dt = 0.25f;
+					if(type == 1)
+					{
+						System.out.println("Time step?");
+						dt = Float.parseFloat(in.readLine());
+						if ((dt > 1)||(dt < 0))
+						{
+							dt = 0.25f;
+						}
+					}
 					System.out.println("Full box? (0 for No, 1 for Yes)");
 					type += 2*Integer.parseInt(in.readLine());
-					Automata = new SmoothLifeAlex(makeRandomGrid(width, height, colNum), colNum, type);
+					Automata = new SmoothLifeAlex(makeRandomGrid(width, height, colNum), colNum, type, dt);
+				}
+				else if (CurLine.toUpperCase().equals("CALEX")) {
+					System.out.println("Colour number?");
+					colNum = Integer.parseInt(in.readLine());
+					System.out.println("Continuous time? (0 for No, 1 for Yes)");
+					int type = Integer.parseInt(in.readLine());
+					float dt = 0.25f;
+					if(type == 1)
+					{
+						System.out.println("Time step?");
+						dt = Float.parseFloat(in.readLine());
+						if ((dt > 1)||(dt < 0))
+						{
+							dt = 0.25f;
+						}
+					}
+					System.out.println("Full box? (0 for No, 1 for Yes)");
+					type += 2*Integer.parseInt(in.readLine());
+					Automata = new ContAlex(makeRandomGrid(width, height, colNum), colNum, type, dt);
 				}
 			}
 			
